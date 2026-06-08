@@ -1,0 +1,335 @@
+@charset "UTF-8";
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+
+/* ================= VARIABLES ================= */
+:root {
+  --primaryColor: #5f7d9c;
+  --hoverColor: #4f6b88;
+  --whiteColor: #ffffff;
+  --blackColor: #1f2a36;
+  --darkGrey: #3b4a5a;
+  --lightGrey: #d6dde5;
+  --bgColor: #eef2f6;
+  --paleColor: #e4ebf2;
+  --inputColor: #f3f6f9;
+  --pastelRed: #e57373;
+}
+
+/* ================= BASE ================= */
+* {
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+}
+
+.loginPage {
+  min-height: 100vh;
+  background: var(--bgColor);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================= LAYOUT ================= */
+.loginContainer {
+  width: 92%;
+  max-width: 1000px;
+  height: 75vh;
+
+  background: var(--whiteColor);
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+  position: relative;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+
+/* Línea divisoria */
+.loginContainer::after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  left: 50%;
+  width: 1px;
+  background: var(--lightGrey);
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+/* ================= SLOTS (para mover imagen/login) ================= */
+.slot {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  display: flex;
+}
+
+/* USER (default):
+   - Login a la izquierda
+   - Imagen a la derecha
+*/
+.loginContainer:not(.showAdmin) .slotLeft  { order: 2; } /* imagen */
+.loginContainer:not(.showAdmin) .slotRight { order: 1; } /* login */
+
+/* ADMIN:
+   - Imagen a la izquierda
+   - Login a la derecha
+*/
+.loginContainer.showAdmin .slotLeft  { order: 1; }
+.loginContainer.showAdmin .slotRight { order: 2; }
+
+/* ================= IMAGEN ================= */
+.loginBg {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ================= SIDE ================= */
+.loginSide {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* base igual a tu css anterior */
+  padding: 2.5rem;
+}
+
+/* Centrar el contenido del lado derecho (donde va el login) */
+.slotRight{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================= CARD (AMBOS) ================= */
+.sideCard {
+  width: 100%;
+  max-width: 520px;
+  padding: 1.6rem;
+  border-radius: 14px;
+  border: 1px solid var(--lightGrey);
+  background: var(--paleColor);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+}
+
+/* ================= HEADER ================= */
+.loginHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.loginLogo {
+  width: 120px;
+  margin-bottom: 0.5rem;
+}
+
+.loginTitle {
+  font-size: 1.6rem;
+  color: var(--primaryColor);
+}
+
+.loginSubtitle {
+  font-size: 0.85rem;
+  color: var(--darkGrey);
+}
+
+/* ================= FORM BASE ================= */
+.loginForm {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.field label {
+  font-size: 14px;
+  color: var(--blackColor);
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--inputColor);
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  min-height: 48px;
+}
+
+.inputRow input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+
+.inputIcon {
+  color: var(--primaryColor);
+  font-size: 1.25rem;
+}
+
+.iconBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--primaryColor);
+}
+
+/* ================= BUTTON ================= */
+.btnPrimary {
+  min-height: 48px;
+  background: var(--primaryColor);
+  color: var(--whiteColor);
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.btnPrimary:hover {
+  background: var(--hoverColor);
+}
+
+.btnIcon {
+  font-size: 1.2rem;
+}
+
+.isDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================= MESSAGES & LINKS ================= */
+.loginMessage {
+  background: var(--pastelRed);
+  padding: 0.7rem;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.loginLinks {
+  display: flex;
+  justify-content: space-between;
+}
+
+.loginLinks.single {
+  justify-content: center;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--primaryColor);
+}
+
+/*Centrar boton de volver - Login*/
+.loginLinks{
+  justify-content: center;
+  display: flex;
+}
+
+.linkBtn.secondary {
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+.linkBtn.secondary:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 992px) {
+  .loginContainer {
+    width: 92%;
+    height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .loginContainer::after {
+    display: none;
+  }
+
+  .slotLeft, .slotRight {
+    order: initial !important;
+  }
+
+  .loginBg {
+    min-height: 240px;
+  }
+
+  /* en móvil, padding normal */
+  .loginSide {
+    padding: 2rem !important;
+  }
+}
+
+/* ================= TRANSICIONES (USER <-> ADMIN) ================= */
+
+/* Suaviza el cambio de orden y evita “saltos” visuales */
+.loginContainer {
+  will-change: transform;
+}
+
+/* Imagen: transición suave */
+.loginBg {
+  transition: transform 450ms ease, filter 450ms ease;
+  transform: scale(1.02);
+  filter: saturate(1) contrast(1);
+}
+
+/* Efecto leve cuando cambia a admin */
+.loginContainer.showAdmin .loginBg {
+  transform: scale(1.04);
+  filter: saturate(1.05) contrast(1.05);
+}
+
+/* Contenedor del login: animación de entrada */
+.slotRight .loginSide {
+  transition: transform 420ms ease, opacity 420ms ease;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Cuando estás en USER (login a la izquierda): entra desde la izquierda */
+.loginContainer:not(.showAdmin) .slotRight .loginSide {
+  animation: loginInLeft 420ms ease both;
+}
+
+/* Cuando estás en ADMIN (login a la derecha): entra desde la derecha */
+.loginContainer.showAdmin .slotRight .loginSide {
+  animation: loginInRight 420ms ease both;
+}
+
+@keyframes loginInLeft {
+  from { opacity: 0; transform: translateX(-18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes loginInRight {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Opcional: suavizar interacción de botones/enlaces */
+.btnPrimary, .linkBtn {
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.btnPrimary:active {
+  transform: translateY(1px);
+}
+

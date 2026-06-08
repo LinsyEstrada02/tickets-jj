@@ -1,0 +1,42 @@
+{
+  "name": "back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@azure/identity": "^4.13.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@react-oauth/google": "^0.12.2",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.1",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "multer": "^2.1.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "mysql2": "^3.16.3",
+    "nodemailer": "^8.0.1",
+    "passport": "^0.7.0",
+    "passport-ldapauth": "^3.0.1",
+    "pdfkit": "^0.17.2",
+    "react-bootstrap": "^2.10.10",
+    "sequelize": "^6.37.7",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
