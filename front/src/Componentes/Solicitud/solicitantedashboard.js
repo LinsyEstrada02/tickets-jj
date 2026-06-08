@@ -333,7 +333,7 @@ function DetalleTicket({ ticketId, onClose, onAnulado }) {
 
   const cargarComentarios = useCallback(async () => {
     try {
-      const { data } = await api.get(`/ticket-comentarios/${ticketId}`);
+      const { data } = await api.get( `/ticket-comentarios/ticket/${ticketId}` );
       const lista = Array.isArray(data) ? data : Array.isArray(data?.comentarios) ? data.comentarios : [];
       setComentarios(prev => {
         const existingIds = new Set(prev.map(c => c.id));

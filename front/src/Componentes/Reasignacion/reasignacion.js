@@ -15,14 +15,14 @@ const API_BASE =
   process.env.REACT_APP_API_BASE_URL ||
   'http://10.21.25.54:3001';
 
-const URI_TICKETS  = `${API_BASE}/api/tickets`;
+const URI_TICKETS = `${API_BASE}/api/tickets`;
 const URI_USUARIOS = `${API_BASE}/api/usuarios`;
 
 const PRIORIDAD_BADGE = {
-  ALTA:        { label: 'Alta',        bg: 'rgba(255,149,0,0.15)',  color: '#7d4800', border: 'rgba(255,149,0,0.35)' },
-  MEDIA:       { label: 'Media',       bg: 'rgba(255,193,7,0.15)',  color: '#664d03', border: 'rgba(255,193,7,0.35)' },
-  BAJA:        { label: 'Baja',        bg: 'rgba(25,135,84,0.15)',  color: '#0f5132', border: 'rgba(25,135,84,0.35)' },
-  SIN_ASIGNAR: { label: 'Sin asignar', bg: 'rgba(108,117,125,0.15)',color: '#343a40', border: 'rgba(108,117,125,0.35)' },
+  ALTA: { label: 'Alta', bg: 'rgba(255,149,0,0.15)', color: '#7d4800', border: 'rgba(255,149,0,0.35)' },
+  MEDIA: { label: 'Media', bg: 'rgba(255,193,7,0.15)', color: '#664d03', border: 'rgba(255,193,7,0.35)' },
+  BAJA: { label: 'Baja', bg: 'rgba(25,135,84,0.15)', color: '#0f5132', border: 'rgba(25,135,84,0.35)' },
+  SIN_ASIGNAR: { label: 'Sin asignar', bg: 'rgba(108,117,125,0.15)', color: '#343a40', border: 'rgba(108,117,125,0.35)' },
 };
 
 const axiosCfg = () => {
@@ -32,56 +32,64 @@ const axiosCfg = () => {
 
 const CompReasignacionTickets = () => {
   const navigate = useNavigate();
+
+  // Estados
+  const [estados, setEstados] = useState([]);
+  const [prioridades, setPrioridades] = useState([]);
+
+  const [tickets, setTickets] = useState([]);
+  const [tecnicos, setTecnicos] = useState([]);
+  const [filteredTickets, setFilteredTickets] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterEstado, setFilterEstado] = useState('todos');
+  const [filterPrioridad, setFilterPrioridad] = useState('todos');
+  const [sortField, setSortField] = useState('fechaSolicitud');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 10;
+
+  const [showDetail, setShowDetail] = useState(false);
+  const [showReassign, setShowReassign] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [tecnicoSel, setTecnicoSel] = useState('');
+  const [motivo, setMotivo] = useState('');
+  const [historial, setHistorial] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingTecnicos, setLoadingTecnicos] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-  const [tickets,           setTickets]           = useState([]);
-  const [tecnicos,          setTecnicos]          = useState([]);
-  const [filteredTickets,   setFilteredTickets]   = useState([]);
-  const [searchTerm,        setSearchTerm]        = useState('');
-  const [filterEstado,      setFilterEstado]      = useState('todos');
-  const [filterPrioridad,   setFilterPrioridad]   = useState('todos');
-  const [sortField,         setSortField]         = useState('fechaSolicitud');
-  const [sortOrder,         setSortOrder]         = useState('desc');
-  const [currentPage,       setCurrentPage]       = useState(1);
-  const ticketsPerPage = 10;
-  const [totalBackend,      setTotalBackend]      = useState(0);
-
-  const [showDetail,        setShowDetail]        = useState(false);
-  const [showReassign,      setShowReassign]      = useState(false);
-  const [showHistory,       setShowHistory]       = useState(false);
-
-  const [selectedTicket,    setSelectedTicket]    = useState(null);
-  const [tecnicoSel,        setTecnicoSel]        = useState('');
-  const [motivo,            setMotivo]            = useState('');
-
-  const [historial,         setHistorial]         = useState([]);
-  const [loadingHistory,    setLoadingHistory]    = useState(false);
-
-  const [loading,           setLoading]           = useState(false);
-  const [loadingTecnicos,   setLoadingTecnicos]   = useState(false);
-  const [saving,            setSaving]            = useState(false);
-  const [error,             setError]             = useState(null);
-
   /* ── Cargar tickets ── */
   const getTickets = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Cargar prioridades
+      axios.get(`${API_BASE}/api/prioridad-ticket`, axiosCfg())
+        .then(res => setPrioridades(Array.isArray(res.data) ? res.data : []))
+        .catch(() => setPrioridades([]));
+
       const params = new URLSearchParams({ page: 1, limit: 500 });
-      if (filterEstado    !== 'todos') params.append('estadoId',  filterEstado);
+      if (filterEstado !== 'todos') params.append('estadoId', filterEstado);
       if (filterPrioridad !== 'todos') params.append('prioridad', filterPrioridad);
 
-      const res  = await axios.get(`${URI_TICKETS}?${params}`, axiosCfg());
+      const res = await axios.get(`${URI_TICKETS}?${params.toString()}`, axiosCfg());
       const data = res.data;
+
       let lista = Array.isArray(data.tickets) ? data.tickets : [];
       lista = lista.filter(t => t.tecnicoId && t.tecnico?.nombre);
+
       setTickets(lista);
       setFilteredTickets(lista);
-      setTotalBackend(data.total ?? lista.length);
     } catch (err) {
       console.error('Error al obtener tickets:', err);
       setError(err);
@@ -96,7 +104,7 @@ const CompReasignacionTickets = () => {
   const getTecnicos = useCallback(async () => {
     try {
       setLoadingTecnicos(true);
-      const res  = await axios.get(URI_USUARIOS, axiosCfg());
+      const res = await axios.get(URI_USUARIOS, axiosCfg());
       const data = Array.isArray(res.data) ? res.data : [];
       const soloTecnicos = data.filter(u =>
         u.activo !== false &&
@@ -113,6 +121,9 @@ const CompReasignacionTickets = () => {
   useEffect(() => {
     getTickets();
     getTecnicos();
+    axios.get(`${API_BASE}/api/estado-ticket`, axiosCfg())
+      .then(res => setEstados(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setEstados([]));
   }, [getTickets, getTecnicos]);
 
   /* ── Filtro local ── */
@@ -150,10 +161,10 @@ const CompReasignacionTickets = () => {
     sortField === field ? <span className="ms-1">{sortOrder === 'asc' ? '↑' : '↓'}</span> : null;
 
   /* ── Paginación ── */
-  const indexOfLast    = currentPage * ticketsPerPage;
-  const indexOfFirst   = indexOfLast - ticketsPerPage;
+  const indexOfLast = currentPage * ticketsPerPage;
+  const indexOfFirst = indexOfLast - ticketsPerPage;
   const currentTickets = filteredTickets.slice(indexOfFirst, indexOfLast);
-  const totalPages     = Math.ceil(filteredTickets.length / ticketsPerPage);
+  const totalPages = Math.ceil(filteredTickets.length / ticketsPerPage);
 
   /* ── Acciones ── */
   const openDetail = (ticket) => { setSelectedTicket(ticket); setShowDetail(true); };
@@ -224,15 +235,15 @@ const CompReasignacionTickets = () => {
 
   const downloadExcel = () => {
     const data = filteredTickets.map(t => ({
-      'No. Solicitud':    t.noSolicitud ?? '',
-      'Tipo':             t.tipoTicket?.nombre ?? '',
-      'Estado':           t.estadoTicket?.nombreVerboso ?? t.estadoTicket?.nombre ?? '',
-      'Técnico Actual':   t.tecnico?.nombre ?? '',
-      'Correo Técnico':   t.tecnico?.email ?? '',
-      'Solicitante':      t.solicitante?.nombre ?? '',
-      'Departamento':     t.departamento?.nombre ?? '',
-      'Descripción':      t.descripcion ?? '',
-      'Fecha Solicitud':  t.fechaSolicitud ?? '',
+      'No. Solicitud': t.noSolicitud ?? '',
+      'Tipo': t.tipoTicket?.nombre ?? '',
+      'Estado': t.estadoTicket?.nombreVerboso ?? t.estadoTicket?.nombre ?? '',
+      'Técnico Actual': t.tecnico?.nombre ?? '',
+      'Correo Técnico': t.tecnico?.email ?? '',
+      'Solicitante': t.solicitante?.nombre ?? '',
+      'Departamento': t.departamento?.nombre ?? '',
+      'Descripción': t.descripcion ?? '',
+      'Fecha Solicitud': t.fechaSolicitud ?? '',
     }));
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -255,25 +266,35 @@ const CompReasignacionTickets = () => {
     );
   };
 
-  const renderEstadoBadge = (estadoTicket) => {
+  const renderEstadoBadge = (estadoTicket, fueReabierto = false) => {
     if (!estadoTicket) return <span className="text-muted">—</span>;
     const nombre = estadoTicket.nombre ?? '';
-    const label  = estadoTicket.nombreVerboso ?? nombre;
+    const label = estadoTicket.nombreVerboso ?? nombre;
     const estilos = {
-      ABIERTO:    { bg: 'rgba(13,110,253,0.12)',  color: '#084298', border: 'rgba(13,110,253,0.30)' },
-      EN_PROCESO: { bg: 'rgba(255,193,7,0.15)',   color: '#664d03', border: 'rgba(255,193,7,0.35)'  },
-      RESUELTO:   { bg: 'rgba(25,135,84,0.15)',   color: '#0f5132', border: 'rgba(25,135,84,0.35)'  },
-      CERRADO:    { bg: 'rgba(108,117,125,0.15)', color: '#343a40', border: 'rgba(108,117,125,0.35)'},
-      ANULADO:    { bg: 'rgba(176,42,55,0.15)',   color: '#842029', border: 'rgba(176,42,55,0.35)'  },
+      ABIERTO: { bg: 'rgba(13,110,253,0.12)', color: '#084298', border: 'rgba(13,110,253,0.30)' },
+      EN_PROCESO: { bg: 'rgba(255,193,7,0.15)', color: '#664d03', border: 'rgba(255,193,7,0.35)' },
+      RESUELTO: { bg: 'rgba(25,135,84,0.15)', color: '#0f5132', border: 'rgba(25,135,84,0.35)' },
+      CERRADO: { bg: 'rgba(108,117,125,0.15)', color: '#343a40', border: 'rgba(108,117,125,0.35)' },
+      ANULADO: { bg: 'rgba(176,42,55,0.15)', color: '#842029', border: 'rgba(176,42,55,0.35)' },
+      REABIERTO: { bg: 'rgba(111,66,193,0.12)', color: '#6f42c1', border: 'rgba(111,66,193,0.3)' },
     };
-    const cfg = estilos[nombre] ?? { bg: 'rgba(108,117,125,0.15)', color: '#343a40', border: 'rgba(108,117,125,0.35)' };
+    const cfg = estilos[nombre] ?? estilos.CERRADO;
+    const rCfg = estilos.REABIERTO;
+    const badgeStyle = {
+      display: 'inline-block', padding: '4px 10px', borderRadius: 999,
+      fontWeight: 700, fontSize: '.75rem', whiteSpace: 'nowrap',
+    };
+
     return (
-      <span style={{
-        display: 'inline-block', padding: '4px 10px', borderRadius: 999,
-        fontWeight: 700, fontSize: '.75rem',
-        background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`,
-      }}>
-        {label}
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        {fueReabierto && (
+          <span style={{ ...badgeStyle, background: rCfg.bg, color: rCfg.color, border: `1px solid ${rCfg.border}` }}>
+            Reabierto
+          </span>
+        )}
+        <span style={{ ...badgeStyle, background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+          {label}
+        </span>
       </span>
     );
   };
@@ -354,11 +375,9 @@ const CompReasignacionTickets = () => {
     ));
   };
 
-  /* ── Render principal ── */
   return (
     <div className="d-flex flex-column min-vh-100" style={{ background: 'var(--bgColor)' }}>
       <Header onLogout={handleLogout} />
-
       <main className="container-fluid" style={{ paddingTop: 24 }}>
         <div className="asign-shell">
           <div className="asign-top">
@@ -375,20 +394,29 @@ const CompReasignacionTickets = () => {
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
+
+              {/* Filtro Estado */}
               <select className="form-select asign-filter" value={filterEstado} onChange={e => setFilterEstado(e.target.value)}>
                 <option value="todos">Todos los estados</option>
-                <option value="1">Abierto</option>
-                <option value="2">En proceso</option>
-                <option value="3">Resuelto</option>
-                <option value="4">Cerrado</option>
-                <option value="5">Anulado</option>
+                {estados.map(estado => (
+                  <option key={estado.id} value={estado.id}>
+                    {estado.nombreVerboso || estado.nombre}
+                  </option>
+                ))}
               </select>
+
+              {/* Filtro Prioridad */}
               <select className="form-select asign-filter" value={filterPrioridad} onChange={e => setFilterPrioridad(e.target.value)}>
                 <option value="todos">Todas las prioridades</option>
-                <option value="ALTA">Alta</option>
-                <option value="MEDIA">Media</option>
-                <option value="BAJA">Baja</option>
+                {prioridades
+                  .filter(p => p.nombre?.toUpperCase() !== "SIN_ASIGNAR")
+                  .map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombreVerboso || p.nombre}
+                    </option>
+                  ))}
               </select>
+
               <div className="d-flex gap-2 flex-wrap">
                 <Button onClick={getTickets} className="asign-btn-reload" disabled={loading}>
                   {loading ? <Spinner size="sm" /> : '↻ Actualizar'}
@@ -463,14 +491,14 @@ const CompReasignacionTickets = () => {
             <table className="table table-borderless">
               <tbody>
                 {[
-                  ['No. Solicitud',  selectedTicket.noSolicitud ?? `#${selectedTicket.id}`],
-                  ['Tipo',           selectedTicket.tipoTicket?.nombre ?? '—'],
-                  ['Descripción',    selectedTicket.descripcion ?? '—'],
+                  ['No. Solicitud', selectedTicket.noSolicitud ?? `#${selectedTicket.id}`],
+                  ['Tipo', selectedTicket.tipoTicket?.nombre ?? '—'],
+                  ['Descripción', selectedTicket.descripcion ?? '—'],
                   ['Técnico Actual', selectedTicket.tecnico?.nombre ?? '—'],
-                  ['Prioridad',      renderPrioridadBadge(selectedTicket.prioridadTicket?.nombre)],
-                  ['Estado',         renderEstadoBadge(selectedTicket.estadoTicket)],
-                  ['Solicitante',    selectedTicket.solicitante?.nombre ?? '—'],
-                  ['Fecha',          formatFecha(selectedTicket.fechaSolicitud)],
+                  ['Prioridad', renderPrioridadBadge(selectedTicket.prioridadTicket?.nombre)],
+                  ['Estado', renderEstadoBadge(selectedTicket.estadoTicket)],
+                  ['Solicitante', selectedTicket.solicitante?.nombre ?? '—'],
+                  ['Fecha', formatFecha(selectedTicket.fechaSolicitud)],
                 ].map(([label, value]) => (
                   <tr key={label}>
                     <td style={{ width: 190, fontWeight: 700 }}>{label}</td>

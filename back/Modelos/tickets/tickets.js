@@ -106,6 +106,11 @@ const tickets = db.define(
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
     },
+    fueReabierto: {
+  type: DataTypes.BOOLEAN,
+  allowNull: false,
+  defaultValue: false,
+},
   },
   {
     tableName: "tickets",

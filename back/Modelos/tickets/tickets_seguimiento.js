@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import db from "../../db/db.js";
+import Usuario from "../usuario/usuario.js";
 
 const ticket_seguimiento = db.define(
   "ticket_seguimiento",
@@ -20,15 +21,17 @@ const ticket_seguimiento = db.define(
       allowNull: true,
     },
 
-    createdAt: {
-      type: DataTypes.DATE(3),
-      defaultValue: DataTypes.NOW,
-    },
+createdAt: {
+  type: DataTypes.DATE(3),
+  allowNull: false,
+  defaultValue: DataTypes.NOW,
+},
 
-    updatedAt: {
-      type: DataTypes.DATE(3),
-      allowNull: false,
-    },
+updatedAt: {
+  type: DataTypes.DATE(3),
+  allowNull: false,
+  defaultValue: DataTypes.NOW,
+},
 
     estadoTicketId: {
       type: DataTypes.INTEGER,
@@ -47,7 +50,7 @@ const ticket_seguimiento = db.define(
 
     tecnicoId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
 
     ticketId: {
@@ -60,5 +63,11 @@ const ticket_seguimiento = db.define(
     timestamps: false,
   }
 );
+
+// SOLO ESTA RELACIÓN
+ticket_seguimiento.belongsTo(Usuario, {
+  foreignKey: "createdByUserId",
+  as: "usuario",
+});
 
 export default ticket_seguimiento;

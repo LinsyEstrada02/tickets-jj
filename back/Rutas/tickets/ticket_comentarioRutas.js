@@ -1,4 +1,3 @@
-// Rutas/tickets/ticketComentariosRutas.js
 import express from "express";
 import {
   getComentariosByTicket,
@@ -7,20 +6,26 @@ import {
   deleteComentario,
   upload,
 } from "../../Controladores/tickets/ticket_comentariocontroller.js";
+
 import { verificarToken } from "../../middlewares/authMiddleware.js";
 import { tieneRol } from "../../middlewares/rolMiddleware.js";
 
 const router = express.Router();
 
-// Listar comentarios de un ticket (?ticketId=X)
+/* =====================================================
+   OBTENER TODOS LOS COMENTARIOS DE UN TICKET
+   GET /api/ticket-comentarios/ticket/73
+===================================================== */
 router.get(
-  "/",
+  "/ticket/:ticketId",
   verificarToken,
   tieneRol("ADMIN", "SUPERVISOR", "TECNICO", "SOLICITANTE"),
   getComentariosByTicket
 );
 
-// Obtener comentario por ID
+/* =====================================================
+   OBTENER COMENTARIO POR ID
+===================================================== */
 router.get(
   "/:id",
   verificarToken,
@@ -28,8 +33,9 @@ router.get(
   getComentarioById
 );
 
-// Crear comentario ── upload.single va ENTRE tieneRol y createComentario ──
-// En ticket_comentarioRutas.js — reemplaza la ruta POST
+/* =====================================================
+   CREAR COMENTARIO
+===================================================== */
 router.post(
   "/",
   verificarToken,
@@ -38,14 +44,20 @@ router.post(
     upload.single("archivo")(req, res, (err) => {
       if (err) {
         console.error("❌ Error en multer/Cloudinary:", err);
-        return res.status(500).json({ error: err.message });
+        return res.status(500).json({
+          error: err.message,
+        });
       }
+
       next();
     });
   },
   createComentario
 );
-// Eliminar comentario (solo ADMIN)
+
+/* =====================================================
+   ELIMINAR COMENTARIO
+===================================================== */
 router.delete(
   "/:id",
   verificarToken,

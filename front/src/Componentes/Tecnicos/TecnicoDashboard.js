@@ -112,7 +112,7 @@ function calcularTiempoResolucion(desde, hasta) {
   return { texto: `⏱ ${texto}`, color, enCurso: !hasta };
 }
 
-function estadoBadge(nombre, nombreVerboso) {
+function estadoBadge(nombre, nombreVerboso, fueReabierto = false) {
   const n = (nombre || "").toUpperCase();
   const estilos = {
     ABIERTO:    { bg: "rgba(25,135,84,0.12)",  color: "#0f5132", border: "rgba(25,135,84,0.3)"  },
@@ -121,14 +121,35 @@ function estadoBadge(nombre, nombreVerboso) {
     ANULADO:    { bg: "rgba(176,42,55,0.12)",  color: "#842029", border: "rgba(176,42,55,0.3)"  },
     REABIERTO:  { bg: "rgba(111,66,193,0.12)", color: "#6f42c1", border: "rgba(111,66,193,0.3)" },
   };
-  const s = estilos[n] || { bg: "rgba(108,117,125,0.12)", color: "#495057", border: "rgba(108,117,125,0.3)" };
+
+  const sEstado = estilos[n] || { bg: "rgba(108,117,125,0.12)", color: "#495057", border: "rgba(108,117,125,0.3)" };
+  const sReabierto = estilos["REABIERTO"];
+
+  const badgeStyle = {
+    display: "inline-block", padding: "4px 10px", borderRadius: 999,
+    fontSize: "0.72rem", fontWeight: 800,
+  };
+
   return (
-    <span style={{
-      display: "inline-block", padding: "4px 10px", borderRadius: 999,
-      fontSize: "0.72rem", fontWeight: 800,
-      background: s.bg, color: s.color, border: `1px solid ${s.border}`,
-    }}>
-      {nombreVerboso || nombre}
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+      {fueReabierto && (
+        <span style={{
+          ...badgeStyle,
+          background: sReabierto.bg,
+          color: sReabierto.color,
+          border: `1px solid ${sReabierto.border}`,
+        }}>
+          Reabierto
+        </span>
+      )}
+      <span style={{
+        ...badgeStyle,
+        background: sEstado.bg,
+        color: sEstado.color,
+        border: `1px solid ${sEstado.border}`,
+      }}>
+        {nombreVerboso || nombre}
+      </span>
     </span>
   );
 }
@@ -242,7 +263,7 @@ function DetalleTicketTecnico({
 
   const cargarComentarios = useCallback(async () => {
     try {
-      const { data } = await api.get(`/ticket-comentarios/${ticketId}`);
+      const { data } = await api.get("/ticket-comentarios", { params: { ticketId }, });
       const lista = Array.isArray(data) ? data : Array.isArray(data?.comentarios) ? data.comentarios : [];
       setComentarios(prev => {
         const existingIds = new Set(prev.map(c => c.id));
@@ -320,23 +341,15 @@ const accionesDisponibles = useMemo(() => {
     .filter(e => {
       const n = e.nombre?.toUpperCase();
 
-      // Ticket recién creado
       if (estadoActual === "ABIERTO") {
         return n === "EN_PROCESO" || n === "CERRADO";
       }
-
-      // Ticket en atención
       if (estadoActual === "EN_PROCESO") {
         return n === "CERRADO";
       }
-
-      // Ticket reabierto por el solicitante
-      if (estadoActual === "REABIERTO") {
-        return n === "EN_PROCESO" || n === "CERRADO";
-      }
-
       return false;
     })
+
     .map(e => ({
       id: e.id,
       nombre: e.nombre,
@@ -368,8 +381,8 @@ const accionesDisponibles = useMemo(() => {
       {ticket && !loading && (
         <>
           <div className="d-flex align-items-center gap-2 flex-wrap mb-3">
-            {estadoBadge(ticket.estadoTicket?.nombre, ticket.estadoTicket?.nombreVerboso)}
-            <span className="badge" style={{ background: prio.bg, color: prio.color, fontWeight: 700 }}>
+{estadoBadge(ticket.estadoTicket?.nombre, ticket.estadoTicket?.nombreVerboso, ticket.fueReabierto)}            
+<span className="badge" style={{ background: prio.bg, color: prio.color, fontWeight: 700 }}>
               {prio.label}
             </span>
             {ticket.anulado && <span className="badge bg-danger">Anulado</span>}
@@ -649,25 +662,52 @@ const TecnicoDashboard = () => {
     return map;
   }, [prioridades]);
 
-  const cargarTickets = useCallback(async (p = 1) => {
-    setLoading(true);
-    try {
-      const params = { page: p, limit: 8, tecnicoId };
-      if (filtroEstado)     params.estadoId   = filtroEstado;
-      if (filtroFechaDesde) params.fechaDesde = filtroFechaDesde;
-      if (filtroFechaHasta) params.fechaHasta = filtroFechaHasta;
+const cargarTickets = useCallback(async (p = 1) => {
+  setLoading(true);
 
-      const { data } = await api.get("/tickets", { params });
-      setTicketsList(data.tickets);
-      setTotal(data.total);
-      setTotalPages(data.totalPages);
-      setPage(p);
-    } catch (err) {
-      console.error("Error cargando tickets del técnico:", err);
-    } finally {
-      setLoading(false);
+  try {
+    const params = {
+      page: p,
+      limit: 8,
+    };
+
+    if (filtroEstado) {
+      params.estadoId = filtroEstado;
     }
-  }, [filtroEstado, filtroFechaDesde, filtroFechaHasta, tecnicoId]);
+
+    if (filtroFechaDesde) {
+      params.fechaDesde = filtroFechaDesde;
+    }
+
+    if (filtroFechaHasta) {
+      params.fechaHasta = filtroFechaHasta;
+    }
+
+    if (filtroBusqueda.trim()) {
+      params.busqueda = filtroBusqueda.trim();
+    }
+
+    const { data } = await api.get(
+      "/tickets/tecnico/mis-tickets",
+      { params }
+    );
+
+    setTicketsList(data.tickets || []);
+    setTotal(data.total || 0);
+    setTotalPages(data.totalPages || 1);
+    setPage(p);
+
+  } catch (err) {
+    console.error("Error cargando tickets del técnico:", err);
+  } finally {
+    setLoading(false);
+  }
+}, [
+  filtroEstado,
+  filtroFechaDesde,
+  filtroFechaHasta,
+  filtroBusqueda
+]);
 
   // Filtrado por texto en el cliente (instantáneo, sin llamada al backend)
   const ticketsFiltrados = useMemo(() => {
@@ -685,19 +725,36 @@ const TecnicoDashboard = () => {
     );
   }, [ticketsList, filtroBusqueda]);
 
-  useEffect(() => {
-    api.get("/estado-ticket").then(r => setEstados(r.data)).catch(() => {});
-    api.get("/prioridad-ticket").then(r => setPrioridades(r.data)).catch(() => {});
-    cargarTickets(1);
-  }, [cargarTickets]);
+useEffect(() => {
+  const cargarDatosIniciales = async () => {
+    try {
+      const [estadosRes, prioridadesRes] = await Promise.all([
+        api.get("/estado-ticket"),
+        api.get("/prioridad-ticket"),
+      ]);
 
-  const limpiarFiltros = () => {
-    setFiltroEstado("");
-    setFiltroFechaDesde("");
-    setFiltroFechaHasta("");
-    setFiltroBusqueda("");
-    setTimeout(() => cargarTickets(1), 0);
+      setEstados(estadosRes.data || []);
+      setPrioridades(prioridadesRes.data || []);
+    } catch (error) {
+      console.error("Error cargando catálogos:", error);
+    }
   };
+
+  cargarDatosIniciales();
+  cargarTickets(1);
+}, [cargarTickets]);
+
+const limpiarFiltros = () => {
+  setFiltroEstado("");
+  setFiltroFechaDesde("");
+  setFiltroFechaHasta("");
+  setFiltroBusqueda("");
+
+  // Recargar la primera página sin filtros
+  setTimeout(() => {
+    cargarTickets(1);
+  }, 0);
+};
 
   const hayFiltrosActivos = filtroEstado || filtroFechaDesde || filtroFechaHasta || filtroBusqueda.trim();
 
@@ -763,17 +820,21 @@ const TecnicoDashboard = () => {
                 </div>
               </div>
 
-              {/* Estado */}
-              <div>
-                <label className="form-label small fw-semibold mb-1">Estado</label>
-                <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
-                  className="form-select form-select-sm modern-input" style={{ minWidth: 180 }}>
-                  <option value="">Todos</option>
-                  {estados.map(e => (
-                    <option key={e.id} value={e.id}>{e.nombreVerboso || e.nombre}</option>
-                  ))}
-                </select>
-              </div>
+{/* Estado */}
+<div>
+  <label className="form-label small fw-semibold mb-1">Estado</label>
+  <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
+    className="form-select form-select-sm modern-input" style={{ minWidth: 180 }}>
+    <option value="">Todos</option>
+    <option value="REABIERTO">Reabierto</option>
+    {estados
+      .filter(e => e.nombre?.toUpperCase() !== "REABIERTO")
+      .map(e => (
+        <option key={e.id} value={e.id}>{e.nombreVerboso || e.nombre}</option>
+      ))
+    }
+  </select>
+</div>
 
               {/* Desde */}
               <div>
@@ -850,8 +911,8 @@ const TecnicoDashboard = () => {
                           <td className="px-3 py-3">{t.edificio?.nombre || "—"}</td>
                           <td className="px-3 py-3">{t.nivel?.nombre || "—"}</td>
                           <td className="px-3 py-3">
-                            {estadoBadge(t.estadoTicket?.nombre, t.estadoTicket?.nombreVerboso)}
-                          </td>
+{estadoBadge(t.estadoTicket?.nombre, t.estadoTicket?.nombreVerboso, t.fueReabierto)}                        
+ </td>
                           <td className="px-3 py-3">
                             <span className="badge" style={{ background: prio.bg, color: prio.color, fontWeight: 700 }}>
                               {prio.label}

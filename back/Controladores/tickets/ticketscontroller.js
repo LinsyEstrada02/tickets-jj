@@ -12,6 +12,7 @@ import {
 } from "../../servicios/correosTickets.js";
 import ticket_tecnicos_asignados_historial from "../../Modelos/tickets/ticket_tecnicos_asignados_historial.js";
 import prioridad_ticket from "../../Modelos/tickets/prioridad_ticket.js";
+import ticket_seguimiento from "../../Modelos/tickets/tickets_seguimiento.js";
 import { Op } from "sequelize";
 import ticket_comentarios from "../../Modelos/tickets/ticket_comentario.js";
 import fs from "fs";
@@ -142,7 +143,13 @@ export const getTickets = async (req, res) => {
     } = req.query;
 
     const where = {};
-    if (estadoId) where.estadoTicketId = Number(estadoId);
+    if (estadoId) {
+  if (String(estadoId).toUpperCase() === "REABIERTO") {
+    where.fueReabierto = true;
+  } else {
+    where.estadoTicketId = Number(estadoId);
+  }
+}
     if (solicitanteId) where.solicitanteId = Number(solicitanteId);
     if (tecnicoId) where.tecnicoId = Number(tecnicoId);
     if (prioridad) {
@@ -507,14 +514,24 @@ export const reabrirTicket = async (req, res) => {
       });
     }
 
-    const estadoReabierto = await estado_ticket.findOne({
-      where: { nombre: "REABIERTO" },
-    });
+const estadoAbierto = await estado_ticket.findOne({
+  where: { nombre: "ABIERTO" },
+});
 
-    await ticket.update({
-      estadoTicketId: estadoReabierto.id,
-      updatedAt: new Date(),
-    });
+await ticket.update({
+  estadoTicketId: estadoAbierto.id,
+  fueReabierto: true,
+  fechaResolucion: null,   // ← limpiar fecha de resolución anterior
+  updatedAt: new Date(),
+});
+
+await ticket_seguimiento.create({
+  ticketId: ticket.id,
+  createdByUserId: req.usuario.id,
+  estadoTicketId: estadoAbierto.id,
+  automatico: true,
+  descripcionDeCambio: "Ticket reabierto por el solicitante",
+});
 
     return res.status(200).json({
       message: "Ticket reabierto correctamente",
@@ -613,7 +630,13 @@ export const getMisTicketsComoTecnico = async (req, res) => {
 
     const where = { tecnicoId: Number(tecnicoId) };
 
-    if (estadoId) where.estadoTicketId = Number(estadoId);
+    if (estadoId) {
+  if (String(estadoId).toUpperCase() === "REABIERTO") {
+    where.fueReabierto = true;
+  } else {
+    where.estadoTicketId = Number(estadoId);
+  }
+}
     if (prioridad) where.prioridadTicketId = Number(prioridad);
 
     if (fechaDesde || fechaHasta) {
