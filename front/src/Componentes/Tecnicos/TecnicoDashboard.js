@@ -283,9 +283,9 @@ function DetalleTicketTecnico({
     }
   }, [ticketId]);
 
-  const cargarComentarios = useCallback(async () => {
+const cargarComentarios = useCallback(async () => {
     try {
-      const { data } = await api.get("/ticket-comentarios", { params: { ticketId }, });
+      const { data } = await api.get(`/ticket-comentarios/ticket/${ticketId}`);
       const lista = Array.isArray(data) ? data : Array.isArray(data?.comentarios) ? data.comentarios : [];
       setComentarios(prev => {
         const existingIds = new Set(prev.map(c => c.id));
@@ -413,7 +413,7 @@ const accionesDisponibles = useMemo(() => {
           <div className="rounded-3 p-3 mb-4" style={{ background: "#fafafa", border: "1px solid #f0f0f0" }}>
             <div className="row g-2">
               {[
-                ["Tipo",             ticket.tipoTicket?.nombre],
+                ["Tipo",             ticket.tipoTicket?.nombre || ticket.tipoPersonalizado],
                 ["Solicitante",      ticket.solicitante?.nombre],
                 ["Departamento",     ticket.departamento?.nombre],
                 ["Edificio",         ticket.edificio?.nombre],
@@ -738,6 +738,7 @@ const cargarTickets = useCallback(async (p = 1) => {
     return ticketsList.filter(t =>
       (t.noSolicitud || "").toLowerCase().includes(q) ||
       (t.tipoTicket?.nombre || "").toLowerCase().includes(q) ||
+      (t.tipoPersonalizado || "").toLowerCase().includes(q) ||
       (t.solicitante?.nombre || "").toLowerCase().includes(q) ||
       (t.departamento?.nombre || "").toLowerCase().includes(q) ||
       (t.departamento?.abreviatura || "").toLowerCase().includes(q) ||
@@ -927,7 +928,7 @@ const limpiarFiltros = () => {
                           <td className="px-3 py-3 fw-bold" style={{ color: "var(--primaryColor)" }}>
                             {t.noSolicitud}
                           </td>
-                          <td className="px-3 py-3">{t.tipoTicket?.nombre || "—"}</td>
+                          <td className="px-3 py-3">{t.tipoTicket?.nombre || t.tipoPersonalizado || "—"}</td>
                           <td className="px-3 py-3">{t.solicitante?.nombre || "—"}</td>
                           <td className="px-3 py-3">{t.departamento?.abreviatura || t.departamento?.nombre || "—"}</td>
                           <td className="px-3 py-3">{t.edificio?.nombre || "—"}</td>
