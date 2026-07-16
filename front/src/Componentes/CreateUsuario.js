@@ -249,33 +249,35 @@ const CompCreateUsuario = () => {
             </div>
 
             {/* ── Email ── */}
-            <div className="form-floating mb-3">
-              <input
-                type="email"
-                className="form-control modern-input"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={!esAdmin || loading}
-              />
-              <label>Email</label>
-            </div>
+<div className="form-floating mb-3">
+  <input
+    type="email"
+    className="form-control modern-input"
+    placeholder="Email"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    required
+    disabled={!esAdmin || loading}
+    autoComplete="off"
+  />
+  <label>Email</label>
+</div>
 
             {/* ── Contraseña (no aplica para SOLICITANTE) ── */}
             {!esSolicitante && (
-              <div className="form-floating mb-3 position-relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="form-control modern-input pe-5"
-                  placeholder="Contraseña"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  minLength={6}
-                  required
-                  disabled={!esAdmin || loading}
-                />
-                <label>Contraseña</label>
+<div className="form-floating mb-3 position-relative">
+  <input
+    type={showPassword ? "text" : "password"}
+    className="form-control modern-input pe-5"
+    placeholder="Contraseña"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    minLength={6}
+    required
+    disabled={!esAdmin || loading}
+    autoComplete="new-password"
+  />
+  <label>Contraseña</label>
                 <button
                   type="button"
                   className="password-toggle"
