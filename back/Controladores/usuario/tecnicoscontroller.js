@@ -44,11 +44,11 @@ export const getTecnicoById = async (req, res) => {
 
 // ==============================
 // POST /api/tecnicos
-// body: { email, nombre, supervisor?, createdByUserId? }
+// body: { email, nombre,  createdByUserId? }
 // ==============================
 export const createTecnico = async (req, res) => {
   try {
-    const { email, nombre, supervisor, createdByUserId } = req.body;
+    const { email, nombre, createdByUserId } = req.body;
 
     if (!email || !nombre) {
       return res
@@ -59,7 +59,6 @@ export const createTecnico = async (req, res) => {
     const nuevoTecnico = await Tecnico.create({
       email,
       nombre,
-      supervisor: supervisor ?? 0,
       createdByUserId: createdByUserId ?? null,
     });
 
@@ -81,7 +80,7 @@ export const createTecnico = async (req, res) => {
 
 // ==============================
 // PUT /api/tecnicos/:id
-// body: { email?, nombre?, supervisor? }
+// body: { email?, nombre?}
 // ==============================
 export const updateTecnico = async (req, res) => {
   const { id } = req.params;
@@ -93,12 +92,11 @@ export const updateTecnico = async (req, res) => {
       return res.status(404).json({ error: "Técnico no encontrado" });
     }
 
-    const { email, nombre, supervisor } = req.body;
+    const { email, nombre } = req.body;
 
     await tecnico.update({
       ...(email !== undefined ? { email } : {}),
       ...(nombre !== undefined ? { nombre } : {}),
-      ...(supervisor !== undefined ? { supervisor } : {}),
       updatedAt: new Date(),
     });
 

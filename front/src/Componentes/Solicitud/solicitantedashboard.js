@@ -103,8 +103,32 @@ function Modal({ title, onClose, children, maxWidth = 560 }) {
             <FaTimes />
           </button>
         </div>
-        <div style={{ overflowY: "auto", padding: "20px 24px" }}>
-          {children}
+        <div style={{ 
+          overflowY: "auto", 
+          padding: "20px 24px",
+          // Ocultar scrollbar en Firefox
+          scrollbarWidth: "thin",
+        }}>
+          {/* Ocultar scrollbar en Chrome/Safari/Edge */}
+          <style>{`
+            .modal-body-content::-webkit-scrollbar {
+              width: 6px;
+            }
+            .modal-body-content::-webkit-scrollbar-track {
+              background: #f1f1f1;
+              border-radius: 10px;
+            }
+            .modal-body-content::-webkit-scrollbar-thumb {
+              background: #888;
+              border-radius: 10px;
+            }
+            .modal-body-content::-webkit-scrollbar-thumb:hover {
+              background: #555;
+            }
+          `}</style>
+          <div className="modal-body-content">
+            {children}
+          </div>
         </div>
       </div>
     </div>
@@ -302,7 +326,7 @@ function FormCrearTicket({ onSuccess, onClose, tipos = [], edificios = [] }) {
 }
 
 /* ═══════════════════════════════════════════════
-   DETALLE TICKET
+   DETALLE TICKET - MODIFICADO PARA ELIMINAR SCROLLBAR INTERNO
 ═══════════════════════════════════════════════ */
 function DetalleTicket({ ticketId, onClose, onAnulado }) {
   const [ticket, setTicket] = useState(null);
@@ -460,13 +484,14 @@ function DetalleTicket({ ticketId, onClose, onAnulado }) {
             </div>
           </div>
 
-          {/* ══ COMENTARIOS ══ */}
+          {/* ══ COMENTARIOS - SIN SCROLLBAR INTERNO ══ */}
           <div className="mb-4">
             <div style={{ fontSize: "0.8rem", color: "#6c757d", fontWeight: 600, marginBottom: 12 }}>
               COMENTARIOS ({comentarios.length})
             </div>
 
-            <div style={{ maxHeight: 260, overflowY: "auto", paddingRight: 8, display: "flex", flexDirection: "column", gap: 12 }}>
+            {/* ELIMINÉ maxHeight y overflowY para que no tenga scroll interno */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {comentarios.length === 0 ? (
                 <div className="text-center text-muted py-5" style={{ fontSize: "0.9rem" }}>
                   <FaCommentAlt style={{ fontSize: "1.8rem", opacity: 0.3, marginBottom: 8 }} /><br />
@@ -853,6 +878,21 @@ const SolicitanteDashboard = () => {
         .btn-save:hover { background: var(--brandBlueDark) !important; border-color: var(--brandBlueDark) !important; }
         .btn-cancel { border-radius: 10px !important; }
         .table-hover tbody tr:hover { background: rgba(95,125,156,0.05) !important; }
+        /* Ocultar scrollbar en el modal */
+        .modal-body-content::-webkit-scrollbar {
+          width: 6px;
+        }
+        .modal-body-content::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .modal-body-content::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 10px;
+        }
+        .modal-body-content::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
       `}</style>
     </div>
   );

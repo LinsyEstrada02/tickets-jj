@@ -139,6 +139,16 @@ export const loginConEmail = async (req, res) => {
 
     const roles = usuario.Rols.map(r => r.nombre);
 
+    // 🔒 ADMIN y TECNICO deben entrar por loginConPassword, no por email
+    const rolesConPassword = ["ADMIN", "TECNICO"];
+    const tieneRolRestringido = roles.some(r => rolesConPassword.includes(r));
+
+    if (tieneRolRestringido) {
+      return res.status(403).json({
+        error: "Este usuario debe iniciar sesión con contraseña"
+      });
+    }
+
     const permisos = [...new Set(
       usuario.Rols.flatMap(r => r.Permisos.map(p => p.nombre))
     )];

@@ -18,14 +18,12 @@ const api = axios.create({ baseURL: `${API_BASE}/api`, withCredentials: true });
 
 const ROLES_DISPONIBLES = [
   { value: "ADMIN",       label: "Administrador" },
-  { value: "SUPERVISOR",  label: "Supervisor"    },
   { value: "TECNICO",     label: "Técnico"       },
   { value: "SOLICITANTE", label: "Solicitante"   },
 ];
 
 const DESCRIPCION_ROL = {
   ADMIN:       "Acceso total al sistema.",
-  SUPERVISOR:  "Puede ver tickets y asignar técnicos. Sin acceso a gestión de usuarios.",
   TECNICO:     "Recibe y gestiona los tickets asignados.",
   SOLICITANTE: "Puede crear y dar seguimiento a sus propios tickets. No requiere contraseña.",
 };

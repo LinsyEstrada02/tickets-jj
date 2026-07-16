@@ -327,16 +327,6 @@ const CompShowUsuario = () => {
               >
                 {isActivo ? <FaBan /> : <FaCheck />}
               </Button>
-
-              {uid && (
-                <Link
-                  to={`/usuarios/${uid}/permisos`}
-                  className="btn btn-sm btn-outline-dark ms-1"
-                  title="Permisos"
-                >
-                  🔐
-                </Link>
-              )}
             </div>
           </td>
         </tr>

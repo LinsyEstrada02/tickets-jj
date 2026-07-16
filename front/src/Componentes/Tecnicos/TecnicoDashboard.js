@@ -41,8 +41,8 @@ const PRIORIDAD_STYLE = {
 };
 
 /* ===== TIEMPO LABORAL 8:00 AM A 4:30 PM ===== */
-const MINUTOS_INICIO_JORNADA = 8 * 60; // 08:00
-const MINUTOS_FIN_JORNADA = 16 * 60 + 30; // 16:30
+const MINUTOS_INICIO_JORNADA = 8 * 60;
+const MINUTOS_FIN_JORNADA = 16 * 60 + 30;
 
 const clonarFecha = (fecha) => new Date(fecha.getTime());
 
@@ -192,7 +192,7 @@ function getPrioridadInfo(ticket, prioridadesById) {
 }
 
 /* ═══════════════════════════════════════════════
-   MODAL GENÉRICO
+   MODAL GENÉRICO - MODIFICADO
 ═══════════════════════════════════════════════ */
 function Modal({ title, onClose, children, maxWidth = 560 }) {
   return (
@@ -214,8 +214,30 @@ function Modal({ title, onClose, children, maxWidth = 560 }) {
             <FaTimes />
           </button>
         </div>
-        <div style={{ overflowY: "auto", padding: "20px 24px" }}>
-          {children}
+        <div style={{ 
+          overflowY: "auto", 
+          padding: "20px 24px",
+          scrollbarWidth: "thin",
+        }}>
+          <style>{`
+            .modal-body-content::-webkit-scrollbar {
+              width: 6px;
+            }
+            .modal-body-content::-webkit-scrollbar-track {
+              background: #f1f1f1;
+              border-radius: 10px;
+            }
+            .modal-body-content::-webkit-scrollbar-thumb {
+              background: #888;
+              border-radius: 10px;
+            }
+            .modal-body-content::-webkit-scrollbar-thumb:hover {
+              background: #555;
+            }
+          `}</style>
+          <div className="modal-body-content">
+            {children}
+          </div>
         </div>
       </div>
     </div>
@@ -223,7 +245,7 @@ function Modal({ title, onClose, children, maxWidth = 560 }) {
 }
 
 /* ═══════════════════════════════════════════════
-   DETALLE TICKET PARA TÉCNICO
+   DETALLE TICKET PARA TÉCNICO - MODIFICADO
 ═══════════════════════════════════════════════ */
 function DetalleTicketTecnico({
   ticketId,
@@ -477,14 +499,14 @@ const accionesDisponibles = useMemo(() => {
             </div>
           )}
 
-          {/* ═══ COMENTARIOS ═══ */}
+          {/* ═══ COMENTARIOS - SIN SCROLLBAR INTERNO ═══ */}
           <div className="mb-4">
             <div style={{ fontSize: "0.8rem", color: "#6c757d", fontWeight: 600, marginBottom: 12 }}>
               COMENTARIOS ({comentarios.length})
             </div>
 
+            {/* ELIMINÉ maxHeight y overflowY para que no tenga scroll interno */}
             <div style={{
-              maxHeight: 200, overflowY: "auto", paddingRight: 8,
               display: "flex", flexDirection: "column", gap: 12,
             }}>
               {comentarios.length === 0 ? (

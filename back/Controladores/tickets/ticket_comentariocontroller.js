@@ -37,11 +37,11 @@ export const upload = multer({
 });
 
 // ==============================
-// GET /api/ticket-comentarios?ticketId=X
+// GET /api/ticket-comentarios/ticket/:ticketId
 // ==============================
 export const getComentariosByTicket = async (req, res) => {
   try {
-    const { ticketId } = req.query;
+    const { ticketId } = req.params;   // ← corregido: viene de la ruta, no del query string
     if (!ticketId) {
       return res.status(400).json({ error: "ticketId es requerido" });
     }
