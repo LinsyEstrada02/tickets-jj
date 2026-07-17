@@ -735,6 +735,7 @@ const cargarTickets = useCallback(async (p = 1) => {
   const ticketsFiltrados = useMemo(() => {
     const q = filtroBusqueda.trim().toLowerCase();
     if (!q) return ticketsList;
+    console.log("Tickets sin filtrar:", ticketsList);
     return ticketsList.filter(t =>
       (t.noSolicitud || "").toLowerCase().includes(q) ||
       (t.tipoTicket?.nombre || "").toLowerCase().includes(q) ||

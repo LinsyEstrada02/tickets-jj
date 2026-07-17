@@ -662,6 +662,7 @@ export const getMisTicketsComoTecnico = async (req, res) => {
         { noSolicitud:  { [Op.like]: q } },
         { descripcion:  { [Op.like]: q } },
         { oficina:      { [Op.like]: q } },
+        { tipoPersonalizado: { [Op.like]: q } },
       ];
     }
     // ────────────────────────────────────────────────

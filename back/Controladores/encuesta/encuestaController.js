@@ -87,7 +87,23 @@ export const responderEncuesta = async (req, res) => {
 // ────────────────────────────────────────────────────────
 export const getResultadosEncuestas = async (req, res) => {
   try {
+    const { mes, anio, todos } = req.query;
+
+    const where = {};
+
+    if (todos !== "true") {
+      const ahora = new Date();
+      const mesFiltro  = parseInt(mes  ?? ahora.getMonth() + 1);
+      const anioFiltro = parseInt(anio ?? ahora.getFullYear());
+
+      const inicio = new Date(anioFiltro, mesFiltro - 1, 1);
+      const fin    = new Date(anioFiltro, mesFiltro, 0, 23, 59, 59, 999);
+
+      where.respondidoAt = { [Op.between]: [inicio, fin] };
+    }
+
     const resultados = await encuesta_satisfaccion.findAll({
+      where,
       include: [
         {
           model: tickets,

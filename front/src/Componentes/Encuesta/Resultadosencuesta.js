@@ -65,10 +65,7 @@ function CustomTooltip({ active, payload }) {
 }
 
 /* ══ RESUMEN MENSUAL ══ */
-function ResumenMensual() {
-  const ahora = new Date();
-  const [mes,     setMes]     = useState(ahora.getMonth() + 1);
-  const [anio,    setAnio]    = useState(ahora.getFullYear());
+function ResumenMensual({ mes, anio }) {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
@@ -77,7 +74,7 @@ function ResumenMensual() {
     setLoading(true);
     setError("");
     try {
-      const { data: res } = await api.get(`/encuesta/resumen-mensual?mes=${mes}&anio=${anio}`);
+      const { data: res } = await api.get(`/encuesta/resumen-mensual?mes=${mes}&anio=${anio}&_ts=${Date.now()}`);
       setData(res);
     } catch (err) {
       setError(err.response?.data?.error || "Error al cargar el resumen.");
@@ -88,25 +85,12 @@ function ResumenMensual() {
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  const anios = [];
-  for (let y = ahora.getFullYear(); y >= ahora.getFullYear() - 2; y--) anios.push(y);
-
   return (
     <div className="card border-0 shadow-sm rounded-4 p-4 mb-4">
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div className="d-flex align-items-center gap-2">
           <FaTrophy style={{ color: "#f59e0b", fontSize: "1.2rem" }} />
           <span className="fw-bold" style={{ fontSize: "0.95rem" }}>Resumen Mensual — Mejor Técnico</span>
-        </div>
-        <div className="d-flex gap-2">
-          <select className="form-select form-select-sm modern-input" value={mes}
-            onChange={e => setMes(Number(e.target.value))} style={{ minWidth: 130 }}>
-            {MESES.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
-          </select>
-          <select className="form-select form-select-sm modern-input" value={anio}
-            onChange={e => setAnio(Number(e.target.value))} style={{ minWidth: 90 }}>
-            {anios.map(y => <option key={y} value={y}>{y}</option>)}
-          </select>
         </div>
       </div>
 
@@ -196,35 +180,52 @@ function ResumenMensual() {
 
 /* ══ COMPONENTE PRINCIPAL ══ */
 const ResultadosEncuesta = () => {
+  const ahora = new Date();
+  const [mes,  setMes]  = useState(ahora.getMonth() + 1);
+  const [anio, setAnio] = useState(ahora.getFullYear());
+  const [verTodo, setVerTodo] = useState(false); // ← ver histórico completo
+
   const [data,          setData]          = useState(null);
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState("");
   const [busqueda,      setBusqueda]      = useState("");
-  const [filtroTecnico, setFiltroTecnico] = useState(""); // ← NUEVO
+  const [filtroTecnico, setFiltroTecnico] = useState("");
 
   const cargar = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const { data: res } = await api.get("/encuesta/resultados");
+      const params = verTodo
+        ? { todos: "true", _ts: Date.now() }
+        : { mes, anio, _ts: Date.now() };
+      const { data: res } = await api.get("/encuesta/resultados", { params });
       setData(res);
     } catch (err) {
       setError(err.response?.data?.error || "Error al cargar los resultados.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [mes, anio, verTodo]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  // Lista de técnicos únicos para el selector
-  const tecnicosUnicos = data?.resultados
-    ? [...new Map(
-        data.resultados
-          .filter(r => r.ticket?.tecnico?.id)
-          .map(r => [r.ticket.tecnico.id, r.ticket.tecnico])
-      ).values()]
-    : [];
+  // Lista COMPLETA de técnicos activos (independiente del filtro de período)
+  const [tecnicos, setTecnicos] = useState([]);
+
+  const getTecnicos = useCallback(async () => {
+    try {
+      const { data: res } = await api.get("/usuarios");
+      const data = Array.isArray(res) ? res : [];
+      const soloTecnicos = data.filter(
+        (u) => u.activo !== false && (u.rol?.nombre === "TECNICO" || u.Rols?.some((r) => r.nombre === "TECNICO"))
+      );
+      setTecnicos(soloTecnicos);
+    } catch (err) {
+      console.error("Error al obtener técnicos:", err);
+    }
+  }, []);
+
+  useEffect(() => { getTecnicos(); }, [getTecnicos]);
 
   // Resultados filtrados por técnico Y búsqueda
   const resultadosFiltrados = (data?.resultados || []).filter((r) => {
@@ -254,7 +255,7 @@ const ResultadosEncuesta = () => {
   }));
 
   const tecnicoSeleccionado = filtroTecnico
-    ? tecnicosUnicos.find(t => String(t.id) === filtroTecnico)
+    ? tecnicos.find(t => String(t.id) === filtroTecnico)
     : null;
 
   return (
@@ -273,19 +274,44 @@ const ResultadosEncuesta = () => {
             </div>
           </div>
 
-          <ResumenMensual />
+          <ResumenMensual mes={mes} anio={anio} />
 
           {loading && <div className="text-center py-5 text-muted"><Spinner animation="border" size="sm" className="me-2" />Cargando resultados...</div>}
           {error && <div className="alert alert-danger small py-2">{error}</div>}
 
           {!loading && !error && data && (
             <>
-              {/* ── Selector de técnico ── */}
+              {/* ── Selector de período y técnico ── */}
               <div className="card border-0 shadow-sm rounded-4 p-3 mb-4">
                 <div className="d-flex flex-wrap gap-3 align-items-center">
+                  <span className="fw-bold small">Período:</span>
+                  {!verTodo && (
+                    <>
+                      <select className="form-select form-select-sm modern-input" value={mes}
+                        onChange={e => setMes(Number(e.target.value))} style={{ minWidth: 130 }}>
+                        {MESES.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
+                      </select>
+                      <select className="form-select form-select-sm modern-input" value={anio}
+                        onChange={e => setAnio(Number(e.target.value))} style={{ minWidth: 90 }}>
+                        {[ahora.getFullYear(), ahora.getFullYear()-1, ahora.getFullYear()-2].map(y => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </>
+                  )}
+                  <button
+                    onClick={() => setVerTodo(!verTodo)}
+                    className={`btn btn-sm ${verTodo ? "btn-secondary" : "btn-outline-secondary"}`}
+                    style={{ borderRadius: 8 }}
+                  >
+                    {verTodo ? "Ver solo este período" : "Ver histórico completo"}
+                  </button>
+
+                  <div className="vr mx-1 d-none d-md-block" style={{ height: 24 }}></div>
+
                   <div className="d-flex align-items-center gap-2">
                     <FaUserTie style={{ color: "var(--brandBlue, #5f7d9c)" }} />
-                    <span className="fw-bold small">Filtrar por técnico:</span>
+                    <span className="fw-bold small">Técnico:</span>
                   </div>
                   <select
                     className="form-select form-select-sm modern-input"
@@ -294,7 +320,7 @@ const ResultadosEncuesta = () => {
                     style={{ maxWidth: 260 }}
                   >
                     <option value="">Todos los técnicos</option>
-                    {tecnicosUnicos.map(t => (
+                    {tecnicos.map(t => (
                       <option key={t.id} value={t.id}>{t.nombre}</option>
                     ))}
                   </select>

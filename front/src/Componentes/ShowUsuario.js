@@ -29,6 +29,7 @@ const CompShowUsuario = () => {
 
   const [usuarios, setUsuarios] = useState([]);
   const [filteredUsuarios, setFilteredUsuarios] = useState([]);
+  const [filterRol, setFilterRol] = useState('todos');
   const [currentPage, setCurrentPage] = useState(1);
   const [usuariosPerPage] = useState(10);
   const [sortOrder, setSortOrder] = useState('asc');
@@ -124,9 +125,16 @@ const CompShowUsuario = () => {
       );
     }
 
+    // Filtro por rol
+    if (filterRol !== 'todos') {
+      filtered = filtered.filter((u) =>
+        u.rol?.nombre === filterRol || u.Rols?.some((r) => r.nombre === filterRol)
+      );
+    }
+
     setFilteredUsuarios(filtered);
     setCurrentPage(1);
-  }, [searchTerm, usuarios, filterActivo, filterDepartamento]);
+  }, [searchTerm, usuarios, filterActivo, filterDepartamento, filterRol]);
 
   const sortUsuarios = (field) => {
     const order = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
@@ -296,6 +304,14 @@ const CompShowUsuario = () => {
             )}
           </td>
           <td>
+            {u.rol?.nombre || u.Rols?.map(r => r.nombre).join(', ') || '—'}
+          </td>
+          <td>
+            <span className={`estado-badge ${isActivo ? 'activo' : 'inactivo'}`}>
+              {isActivo ? 'Activo' : 'Inactivo'}
+            </span>
+          </td>
+          <td>
             <span className={`estado-badge ${isActivo ? 'activo' : 'inactivo'}`}>
               {isActivo ? 'Activo' : 'Inactivo'}
             </span>
@@ -376,6 +392,18 @@ const CompShowUsuario = () => {
                 ))}
               </select>
 
+              {/* filtro por rol */}
+              <select
+                className="form-select usuarios-filter"
+                value={filterRol}
+                onChange={(e) => setFilterRol(e.target.value)}
+              >
+                <option value="todos">Todos los roles</option>
+                <option value="ADMIN">Administrador</option>
+                <option value="TECNICO">Técnico</option>
+                <option value="SOLICITANTE">Solicitante</option>
+              </select>
+
               <div className="d-flex gap-2 flex-wrap">
                 <Button onClick={downloadGeneralPDF} className="usuarios-btn-pdf">
                   PDF
@@ -411,6 +439,10 @@ const CompShowUsuario = () => {
                     </th>
                     <th style={{ minWidth: 180 }}>
                       Subdepartamento
+                    </th>
+                    <th style={{ width: 120 }}>Rol</th>
+                    <th onClick={() => sortUsuarios('activo')} style={{ cursor: 'pointer', width: 140 }}>
+                      Estado {renderSortArrow('activo')}
                     </th>
                     <th onClick={() => sortUsuarios('activo')} style={{ cursor: 'pointer', width: 140 }}>
                       Estado {renderSortArrow('activo')}
@@ -691,7 +723,7 @@ const CompShowUsuario = () => {
           .usuarios-card { width: 100%; }
         }
       `}</style>
-            <Footer />
+      <Footer />
     </div>
   );
 };

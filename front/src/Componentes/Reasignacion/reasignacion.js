@@ -136,6 +136,7 @@ const CompReasignacionTickets = () => {
         (t.descripcion || '').toLowerCase().includes(term) ||
         (t.solicitante?.nombre || '').toLowerCase().includes(term) ||
         (t.tipoTicket?.nombre || '').toLowerCase().includes(term) ||
+        (t.tipoPersonalizado || '').toLowerCase().includes(term) ||
         (t.departamento?.nombre || '').toLowerCase().includes(term) ||
         (t.tecnico?.nombre || '').toLowerCase().includes(term)
       );
@@ -222,7 +223,7 @@ const CompReasignacionTickets = () => {
       head: [['No. Solicitud', 'Tipo', 'Estado', 'Técnico Actual', 'Solicitante', 'Depto.']],
       body: filteredTickets.map(t => [
         t.noSolicitud ?? '—',
-        t.tipoTicket?.nombre ?? '—',
+        t.tipoTicket?.nombre ?? t.tipoPersonalizado ?? '—',
         t.estadoTicket?.nombreVerboso ?? t.estadoTicket?.nombre ?? '—',
         t.tecnico?.nombre ?? '—',
         t.solicitante?.nombre ?? '—',
@@ -237,6 +238,7 @@ const CompReasignacionTickets = () => {
     const data = filteredTickets.map(t => ({
       'No. Solicitud': t.noSolicitud ?? '',
       'Tipo': t.tipoTicket?.nombre ?? '',
+      'Tipo': t.tipoTicket?.nombre ?? t.tipoPersonalizado ?? '',
       'Estado': t.estadoTicket?.nombreVerboso ?? t.estadoTicket?.nombre ?? '',
       'Técnico Actual': t.tecnico?.nombre ?? '',
       'Correo Técnico': t.tecnico?.email ?? '',
@@ -332,7 +334,7 @@ const CompReasignacionTickets = () => {
           </span>
         </td>
         <td style={{ maxWidth: 220 }}>
-          <div style={{ fontSize: '.88rem', fontWeight: 600 }}>{ticket.tipoTicket?.nombre ?? '—'}</div>
+          <div style={{ fontSize: '.88rem', fontWeight: 600 }}>{ticket.tipoTicket?.nombre ?? ticket.tipoPersonalizado ?? '—'}</div>
           <small className="text-muted">
             {ticket.descripcion?.substring(0, 55)}{ticket.descripcion?.length > 55 ? '…' : ''}
           </small>
@@ -492,7 +494,7 @@ const CompReasignacionTickets = () => {
               <tbody>
                 {[
                   ['No. Solicitud', selectedTicket.noSolicitud ?? `#${selectedTicket.id}`],
-                  ['Tipo', selectedTicket.tipoTicket?.nombre ?? '—'],
+                  ['Tipo', selectedTicket.tipoTicket?.nombre ?? selectedTicket.tipoPersonalizado ?? '—'],
                   ['Descripción', selectedTicket.descripcion ?? '—'],
                   ['Técnico Actual', selectedTicket.tecnico?.nombre ?? '—'],
                   ['Prioridad', renderPrioridadBadge(selectedTicket.prioridadTicket?.nombre)],

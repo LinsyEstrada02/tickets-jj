@@ -401,6 +401,7 @@ const CompAsignacionTickets = () => {
           (t.solicitante?.nombre || "").toLowerCase().includes(term) ||
           (t.tipoTicket?.nombre || "").toLowerCase().includes(term) ||
           (t.departamento?.nombre || "").toLowerCase().includes(term) ||
+          (t.tipoPersonalizado || "").toLowerCase().includes(term) || 
           (t.tecnico?.nombre || "").toLowerCase().includes(term) ||
           (p?.nombreVerboso || p?.nombre || "").toLowerCase().includes(term)
         );
