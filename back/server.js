@@ -13,6 +13,7 @@ import subDepartamentoRoutes from "./Rutas/departamento.solicitante/sub_departam
 import usuarioPermisoRoutes  from "./Rutas/usuario/permisosRutas.js";
 import rolesRoutes           from "./Rutas/usuario/rolesRutas.js";
 import permisosRoutes        from "./Rutas/usuario/catalogopermisosRutas.js";
+import passwordResetRoutes from "./Rutas/usuario/password_resetRutas.js";
 // RUTAS — Tickets
 import ticketsRoutes           from "./Rutas/tickets/ticketsRutas.js";
 import estadoTicketRoutes      from "./Rutas/tickets/estado_ticketRutas.js";
@@ -80,6 +81,7 @@ app.use("/api/departamentos-solicitantes",     departamentoRoutes);
 app.use("/api/sub-departamentos-solicitantes", subDepartamentoRoutes);
 app.use("/api/roles",                          rolesRoutes);
 app.use("/api/permisos",                       permisosRoutes);
+app.use("/api/password-reset",                 passwordResetRoutes);
 
 /* ==========================
    RUTAS API — Tickets

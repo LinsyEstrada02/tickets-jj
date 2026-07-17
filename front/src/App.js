@@ -4,6 +4,13 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "./Componentes/PrivateRoute";
 import Login from "./Componentes/Login";
 import Dashboard from "./Componentes/Dashboard";
+
+//Frogot Password
+import ForgotPassword from "./Componentes/ContraseñaPerdida.js";
+
+// Reset Password
+import ResetPassword from "./Componentes/ResetPassword";
+
 // Usuarios
 import Usuario           from "./Componentes/ShowUsuario";
 import CompCreateUsuario from "./Componentes/CreateUsuario";
@@ -28,6 +35,7 @@ import SupervisorDashboard from "./Componentes/Supervisor/supervisor.js";
 import EncuestaTicket from "./Componentes/Encuesta/Encuestaticket.js"
 import ResultadosEncuesta from "./Componentes/Encuesta/Resultadosencuesta.js"
 
+
 // ─── Roles de conveniencia ────────────────────────────────────────────────────
 const ADMIN = ["ADMINISTRADOR", "ADMIN"];
 const ADMIN_SUP = ["ADMINISTRADOR", "ADMIN", "SUPERVISOR"];
@@ -44,6 +52,12 @@ function App() {
 
         {/* Pública */}
         <Route path="/login" element={<Login />} />
+
+        {/* Recuperar contraseña */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        {/* Resetear contraseña */}
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* ── Dashboard general (admin) ── */}
         <Route path="/dashboard"

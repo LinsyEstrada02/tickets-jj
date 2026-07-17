@@ -333,3 +333,7 @@
   transform: translateY(1px);
 }
 
+.loginPage .sideCard{
+  max-width: 430px;
+}
+

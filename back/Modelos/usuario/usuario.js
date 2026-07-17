@@ -25,6 +25,17 @@ const Usuario = db.define(
       type: DataTypes.STRING(191),
       allowNull: true,
     },
+    resetPasswordToken: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      field: "password_reset_token",
+    },
+
+    resetPasswordExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: "password_reset_expires",
+    },
     emailVerificado: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -35,7 +46,7 @@ const Usuario = db.define(
       allowNull: false,
       defaultValue: true,
     },
-     rolId: {
+    rolId: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },

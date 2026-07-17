@@ -113,18 +113,30 @@ if (roles.includes("ADMINISTRADOR")) {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={!isValid || loading}
-            className="btnPrimary"
-          >
-            <span>{loading ? "Ingresando..." : "Iniciar sesión"}</span>
-            <FaArrowRightLong />
-          </button>
+<button
+  type="submit"
+  disabled={!isValid || loading}
+  className="btnPrimary"
+>
+  <span>{loading ? "Ingresando..." : "Iniciar sesión"}</span>
+  <FaArrowRightLong />
+</button>
 
-          <button type="button" className="linkBtn secondary" onClick={onBackClick}>
-            Volver
-          </button>
+<button
+  type="button"
+  className="linkBtn"
+  onClick={() => navigate("/forgot-password")}
+>
+  ¿Olvidaste tu contraseña?
+</button>
+
+<button
+  type="button"
+  className="linkBtn secondary"
+  onClick={onBackClick}
+>
+  Volver
+</button>
         </form>
       </div>
     </section>

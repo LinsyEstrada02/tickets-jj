@@ -106,3 +106,54 @@ export const enviarEncuestaTicket = async ({
     throw err;
   }
 };
+
+/* =========================
+   CORREO: RECUPERACIÓN DE CONTRASEÑA
+========================= */
+export const enviarCorreoRecuperacion = async ({
+  emailUsuario,
+  nombreUsuario,
+  resetUrl,
+}) => {
+  console.log("=== DEBUG CORREO RECUPERACION ===");
+  console.log("Enviando a:", emailUsuario);
+  console.log("Reset URL:", resetUrl);
+  try {
+    await transporter.sendMail({
+      from:    `"Sistema de Tickets MSPAS" <${process.env.MAIL_USER}>`,
+      to:      emailUsuario,
+      subject: "Recuperación de contraseña",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #0d6efd;">Sistema de Tickets MSPAS</h2>
+          <p>Hola <b>${nombreUsuario}</b>,</p>
+          <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+          <div style="text-align:center; margin: 24px 0;">
+            <a href="${resetUrl}"
+              style="
+                padding: 12px 24px;
+                background: #0d6efd;
+                color: white;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: bold;
+                font-size: 1rem;
+              ">
+              Restablecer contraseña
+            </a>
+          </div>
+          <p style="color:#6c757d; font-size:0.85rem;">
+            Este enlace expirará en 1 hora. Si tú no solicitaste este cambio, puedes ignorar este correo.
+          </p>
+          <br>
+          <p style="color:#6c757d; font-size:0.85rem;">Sistema de Tickets — Ministerio de Salud Pública y Asistencia Social</p>
+        </div>
+      `,
+    });
+    console.log("✅ Correo de recuperación enviado correctamente a:", emailUsuario);
+  } catch (err) {
+    console.error("❌ Error enviando correo de recuperación:");
+    console.error("Mensaje:", err.message);
+    throw err;
+  }
+};
